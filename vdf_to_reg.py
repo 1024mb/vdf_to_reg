@@ -112,16 +112,16 @@ def populate_reg(top, reg_key_names, reg_file, game_language, install_dir, no_fa
                                         language_fallback = True
                         else:
                             sub_sub_keys_list = list(key_data[jj][i])
-                            sub_sub_keys_list.append(key_data[jj][i][sub_sub_keys_list[0]].replace("%INSTALLDIR%",
-                                                                                                   install_dir))
+                            sub_sub_keys_list.append(key_data[jj][i][sub_sub_keys_list[0]].
+                                                     replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\"))
                             reg_file.writelines("\"" + sub_sub_keys_list[0] + "\"=\"" + sub_sub_keys_list[1] + "\"\n")
                     else:
                         value_key = key_data[jj][i]
-                        value_key = value_key.replace("%INSTALLDIR%", install_dir)
+                        value_key = value_key.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
                         reg_file.writelines("\"" + i + "\"=\"" + value_key + "\"\n")
             else:
                 value_key = key_data[jj]
-                value_key = value_key.replace("%INSTALLDIR%", install_dir)
+                value_key = value_key.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
                 reg_file.writelines("\"" + jj + "\"=\"" + value_key + "\"\n")
 
         reg_file.writelines(reg_separator)
