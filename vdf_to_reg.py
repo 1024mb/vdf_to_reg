@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 import sys
 
 import vdf
@@ -21,6 +22,10 @@ def main():
     parser.add_argument("--no-fallback", "-nf", action="store_true",
                         help="Set this for the script to not fallback to the closest variation of the language."
                              " Currently it only works for Latam, Brazilian and TChinese")
+    parser.add_argument("--batch", "-b", action="store_true",
+                        help="Create batch file to import registry files.")
+    parser.add_argument("--auto-import", "-ai", action="store_true",
+                        help="Auto import reg file after creation.")
     # Script exit codes:
     #                   2 = Language not found in supported list
     #                   3 = No registry data inside VDF file
@@ -39,9 +44,33 @@ def main():
         print("\nERROR: Specified language is not present in the supported languages list, if this is a mistake please"
               " contact the maintainer, make a PR or edit this script file to include the language.")
         sys.exit(2)
-    top, reg_key_names, reg_file = create_reg(args.path, args.output)
-    populate_reg(top, reg_key_names, reg_file, game_language, args.install_dir, args.no_fallback)
+
+    top, reg_key_names, reg_file, output = create_reg(args.path, args.output, args.batch)
+    language_fallback, language_present = populate_reg(top, reg_key_names, reg_file, game_language, args.install_dir,
+                                                       args.no_fallback)
+    if args.auto_import is True:
+        print("Importing reg file to the 32-bit registry location...")  # this is for old games
+        subprocess.call(["reg", "import", output, "/reg:32"])
+        print("\nImporting reg file to the 64-bit registry location...")
+        subprocess.call(["reg", "import", output, "/reg:64"])
+
+    if language_fallback is True:
+        fallback_msg = "\n      But a fallback has been used to set the language to the closest variation."
+    else:
+        fallback_msg = ""
+
+    if language_present is False:
+        print("\nINFO: The specified language wasn't found in the VDF file." + fallback_msg)
+        sys.exit(4)
+
     sys.exit(0)
+
+
+def create_batch(output):
+    with open(os.path.splitext(output)[0] + ".cmd", "w", encoding="utf-8", errors="surrogatepass") as f:
+        f.writelines("REG IMPORT \"" + output + "\" /reg:32\n"
+                     + "REG IMPORT \"" + output + "\" /reg:64")
+        f.close()
 
 
 def sanitize_lang(language):
@@ -60,7 +89,7 @@ def sanitize_lang(language):
     return language
 
 
-def create_reg(vdf_path, output):
+def create_reg(vdf_path, output, batch):
     if output is None or output == "":
         output = os.getcwd() + os.path.sep + os.path.splitext(os.path.basename(vdf_path))[0] + ".reg"
     vdf_content = vdf.parse(open(vdf_path, "r", encoding="utf-8", errors="surrogatepass"))
@@ -71,12 +100,15 @@ def create_reg(vdf_path, output):
     reg_key_names = list(top.keys())  # To get the registry key names/paths
     reg_file = open(output, "w", encoding="utf-8", errors="surrogatepass")
     reg_file.writelines("Windows Registry Editor Version 5.00\n\n")
-    return top, reg_key_names, reg_file
+    if batch is True:
+        create_batch(output)
+    return top, reg_key_names, reg_file, output
 
 
 def populate_reg(top, reg_key_names, reg_file, game_language, install_dir, no_fallback):
     language_present = False
     language_fallback = False
+
     if len(top) > 1:
         reg_separator = "\n"
     else:
@@ -127,15 +159,7 @@ def populate_reg(top, reg_key_names, reg_file, game_language, install_dir, no_fa
         reg_file.writelines(reg_separator)
 
     reg_file.close()
-
-    if language_fallback is True:
-        fallback_msg = " But a fallback has been used to set the language to the closest variation."
-    else:
-        fallback_msg = ""
-
-    if language_present is False:
-        print("\nINFO: The specified language wasn't found in the VDF file." + fallback_msg)
-        sys.exit(4)
+    return language_fallback, language_present
 
 
 def set_language(key_data, jj, i, reg_file):

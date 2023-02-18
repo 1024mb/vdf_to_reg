@@ -12,6 +12,8 @@ You can specify:
 - No fallback usage.
 - Game's installation directory.
 - Output file path.
+- Batch file creation to import reg file.
+- Auto import registry file.
 
 Default values:
 
@@ -20,6 +22,8 @@ Default values:
 - Fallback: `Yes`
 - Install dir: `Current path`
 - Output: same base name as `input` in `current path`.
+- Batch: `No`
+- Auto import: `No`
 
 I've only tested some games so far.
 
@@ -31,7 +35,7 @@ Usage:
 ---------------------------------------
 
 ```
-usage: vdf_to_reg.py [-h] [--path [PATH]] [--install-dir [INSTALL_DIR]] [--language [LANGUAGE]] [--output [OUTPUT]] [--no-fallback]
+usage: vdf_to_reg [-h] [--path [PATH]] [--install-dir [INSTALL_DIR]] [--language [LANGUAGE]] [--output [OUTPUT]] [--no-fallback] [--batch] [--auto-import]
 
 options:
   -h, --help            show this help message and exit
@@ -44,4 +48,6 @@ options:
   --output [OUTPUT], -o [OUTPUT]
                         Specify output file path or name. By default is the same basename as the vdf file.
   --no-fallback, -nf    Set this for the script to not fallback to the closest variation of the language. Currently it only works for Latam, Brazilian and TChinese
+  --batch, -b           Create batch file to import registry files.
+  --auto-import, -ai    Auto import reg file after creation.
 ```
