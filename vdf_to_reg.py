@@ -12,20 +12,30 @@ def main():
     parser.add_argument("--path", "-p", nargs="?", default="installscript.vdf",
                         help="VDF file path, by default loads the \"installscript.vdf\" file located in the current"
                              " directory.")
-    parser.add_argument("--install-dir", "-id", nargs="?", default=os.getcwd(),
+    parser.add_argument("--install-dir", "-id",
+                        type=str,
+                        required=False,
+                        default=os.getcwd(),
                         help="By default is the current directory, you can specify the game's installation"
                              " directory here.")
-    parser.add_argument("--language", "-l", nargs="?", default="english",
+    parser.add_argument("--language", "-l",
+                        type=str,
+                        required=False,
+                        default="english",
                         help="Language to use. Specify the English name of the language, don't use the native name"
                              " or ISO codes. By default is English")
-    parser.add_argument("--output", "-o", nargs="?",
-                        help="Specify output file path or name. By default is the same basename as the vdf file.")
-    parser.add_argument("--no-fallback", "-nf", action="store_true",
+    parser.add_argument("--output", "-o",
+                        required=False,
+                        help="Specify output file vdf_path or name. By default is the same basename as the vdf file.")
+    parser.add_argument("--no-fallback", "-nf",
+                        action="store_true",
                         help="Set this for the script to not fallback to the closest variation of the language."
                              " Currently it only works for Latam, Brazilian and TChinese")
-    parser.add_argument("--batch", "-b", action="store_true",
+    parser.add_argument("--batch", "-b",
+                        action="store_true",
                         help="Create batch file to import registry files.")
-    parser.add_argument("--auto-import", "-ai", action="store_true",
+    parser.add_argument("--auto-import", "-ai",
+                        action="store_true",
                         help="Auto import reg file after creation.")
     # Script exit codes:
     #                   2 = Language not found in supported list
@@ -35,22 +45,52 @@ def main():
 
     args = parser.parse_args()
 
+    language = args.language
+    path = args.path
+    batch = args.batch
+    auto_import = args.auto_import
+    output = args.output
+    no_fallback = args.no_fallback
+    install_dir = args.install_dir
+
+    start_processing(language=language,
+                     vdf_path=path,
+                     batch=batch,
+                     auto_import=auto_import,
+                     output=output,
+                     no_fallback=no_fallback,
+                     install_dir=install_dir)
+
+
+def start_processing(language: str,
+                     vdf_path: str,
+                     output: str | None,
+                     install_dir: str,
+                     batch: bool,
+                     auto_import: bool,
+                     no_fallback: bool) -> None:
     supported_languages = ["arabic", "bulgarian", "schinese", "tchinese", "czech", "danish", "dutch", "english",
                            "finnish", "french", "german", "greek", "hungarian", "italian", "japanese", "koreana",
                            "norwegian", "polish", "portuguese", "brazilian", "romanian", "russian", "spanish", "latam",
                            "swedish", "thai", "turkish", "ukrainian", "vietnamese"]
 
-    preferred_language = sanitize_lang(args.language.lower())
+    preferred_language = sanitize_lang(language=language)
 
-    if preferred_language is not None and preferred_language not in supported_languages:
+    if preferred_language not in supported_languages:
         print("\nERROR: Specified language is not present in the supported languages list, if this is a mistake please"
               " contact the maintainer, make a PR or edit this script file to include the language.")
         sys.exit(2)
 
-    top, reg_key_names, output = create_reg(args.path, args.output, args.batch)
-    language_fallback, language_present = populate_reg(top, reg_key_names, preferred_language, args.install_dir,
-                                                       args.no_fallback, output)
-    if args.auto_import:
+    top, reg_key_names, output = create_reg(vdf_path=vdf_path,
+                                            output=output,
+                                            batch=batch)
+    language_fallback, language_present = populate_reg(top=top,
+                                                       reg_key_names=reg_key_names,
+                                                       preferred_language=preferred_language,
+                                                       install_dir=install_dir,
+                                                       no_fallback=no_fallback,
+                                                       output=output)
+    if auto_import:
         print("Importing reg file to the 32-bit registry location...")  # this is for old games
         subprocess.call(["reg", "import", output, "/reg:32"])
         print("\nImporting reg file to the 64-bit registry location...")
@@ -77,6 +117,8 @@ def create_batch(output: str) -> None:
 
 
 def sanitize_lang(language: str) -> str:
+    language = language.lower()
+
     if "chinese" in language:
         if "traditional" in language:
             language = "tchinese"
@@ -112,6 +154,7 @@ def create_reg(vdf_path: str,
 
     if batch:
         create_batch(output)
+
     return top, reg_key_names, output
 
 
@@ -129,50 +172,87 @@ def populate_reg(top: dict,
     else:
         reg_separator = ""
 
+    match preferred_language:
+        case "latam":
+            fallback_language = "spanish"
+        case "brazilian":
+            fallback_language = "portuguese"
+        case "tchinese":
+            fallback_language = "schinese"
+        case "spanish":
+            fallback_language = "latam"
+        case "portuguese":
+            fallback_language = "brazilian"
+        case "schinese":
+            fallback_language = "tchinese"
+        case _:
+            fallback_language = None
+
     with open(output, "a", encoding="utf-8", errors="surrogatepass") as reg_file:
         for reg_key_name in reg_key_names:
             reg_file.writelines("[" + reg_key_name + "]\n")
             key_data = top[reg_key_name]
 
+            language_found = None
+
             for sub_key in key_data:
                 if type(key_data[sub_key]) is dict:
                     for language in key_data[sub_key]:
-                        if type(key_data[sub_key][language]) is dict:
-                            # chances are that this is for the language, I haven't seen another use of this.
-                            if sub_key.lower() == "string" or sub_key.lower() == "dword":
-                                language_lower = language.lower()
+                        language_lower = language.lower()
 
-                                if language_lower == preferred_language:
-                                    language_present = True
-                                    language_fallback = False
-                                    set_language(key_data, sub_key, language, reg_file)
-                                elif not no_fallback:
-                                    if preferred_language == "latam":
-                                        if language_lower == "spanish" and not language_present:
-                                            set_language(key_data, sub_key, language, reg_file)
-                                            language_fallback = True
-                                    elif preferred_language == "brazilian":
-                                        if language_lower == "portuguese" and not language_present:
-                                            set_language(key_data, sub_key, language, reg_file)
-                                            language_fallback = True
-                                    elif preferred_language == "tchinese":
-                                        if language_lower == "schinese" and not language_present:
-                                            set_language(key_data, sub_key, language, reg_file)
-                                            language_fallback = True
+                        if preferred_language == language_lower:
+                            language_present = True
+                            language_fallback = False
+                            language_found = language
+                            break
+
+                    if not language_present:
+                        if no_fallback:
+                            continue
+
+                        for language in key_data[sub_key]:
+                            language_lower = language.lower()
+
+                            if fallback_language == language_lower:
+                                language_present = False
+                                language_fallback = True
+                                language_found = language
+                                break
+
+                    for entry in key_data[sub_key]:
+                        if type(key_data[sub_key][entry]) is dict:
+                            # chances are that this is for the language, I haven't seen another use of this.
+                            if entry.lower() != language_found:
+                                continue
+
+                            if sub_key.lower() == "string" or sub_key.lower() == "dword":
+                                set_language(key_data, sub_key, entry, reg_file)
                             else:
-                                sub_sub_keys_list = list(key_data[sub_key][language])
-                                sub_sub_keys_list.append(key_data[sub_key][language][sub_sub_keys_list[0]].
-                                                         replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\"))
-                                reg_file.writelines("\"" + sub_sub_keys_list[0] + "\"=\"" + sub_sub_keys_list[
-                                    1] + "\"\n")
+                                for key, value in key_data[sub_key][entry].items():
+                                    reg_file.writelines("\""
+                                                        + key
+                                                        + "\"=\""
+                                                        + value.replace("%INSTALLDIR%", install_dir).replace("\\",
+                                                                                                             "\\\\")
+                                                        + "\"\n")
                         else:
-                            value_key = key_data[sub_key][language]
-                            value_key = value_key.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
-                            reg_file.writelines("\"" + language + "\"=\"" + value_key + "\"\n")
+                            value_key = key_data[sub_key][entry]
+                            if type(value_key) is dict:
+                                for key, value in value_key.items():
+                                    value = value.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
+                                    reg_file.writelines("\"" + key + "\"=\"" + value + "\"\n")
+                            elif type(value_key) is str:
+                                value_key = value_key.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
+                                reg_file.writelines("\"" + entry + "\"=\"" + value_key + "\"\n")
+                            else:
+                                raise TypeError("Unknown type, support not added for this.")
                 else:
                     value_key = key_data[sub_key]
-                    value_key = value_key.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
-                    reg_file.writelines("\"" + sub_key + "\"=\"" + value_key + "\"\n")
+                    if type(value_key) is str:
+                        value_key = value_key.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
+                        reg_file.writelines("\"" + sub_key + "\"=\"" + value_key + "\"\n")
+                    else:
+                        raise TypeError("Unknown type, support not added for this.")
 
             reg_file.writelines(reg_separator)
 
