@@ -14,7 +14,7 @@ def main():
     parser.add_argument("-v", "--version",
                         action="version",
                         version=f"%(prog)s v{__version__}")
-    parser.add_argument("--vdf_path", "-p",
+    parser.add_argument("--path", "-p",
                         type=str,
                         required=False,
                         default=os.path.join(os.getcwd(), "installscript.vdf"),
