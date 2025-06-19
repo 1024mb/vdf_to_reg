@@ -6,11 +6,19 @@ from io import TextIOWrapper
 
 import vdf
 
+__version__ = "0.3.0"
+
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--path", "-p", nargs="?", default="installscript.vdf",
-                        help="VDF file path, by default loads the \"installscript.vdf\" file located in the current"
+    parser = argparse.ArgumentParser(prog="vdf-to-reg")
+    parser.add_argument("-v", "--version",
+                        action="version",
+                        version=f"%(prog)s v{__version__}")
+    parser.add_argument("--vdf_path", "-p",
+                        type=str,
+                        required=False,
+                        default=os.path.join(os.getcwd(), "installscript.vdf"),
+                        help="VDF file vdf_path, by default loads the \"installscript.vdf\" file located in the current"
                              " directory.")
     parser.add_argument("--install-dir", "-id",
                         type=str,
