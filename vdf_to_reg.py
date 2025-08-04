@@ -215,7 +215,7 @@ def populate_reg(top: dict,
                             break
 
                     if not language_present:
-                        if no_fallback:
+                        if no_fallback or fallback_language is None:
                             continue
 
                         for language in key_data[sub_key]:
@@ -248,17 +248,27 @@ def populate_reg(top: dict,
                             if type(value_key) is dict:
                                 for key, value in value_key.items():
                                     value = value.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
-                                    reg_file.writelines("\"" + key + "\"=\"" + value + "\"\n")
+                                    if key.lower() == "(default)":
+                                        reg_file.writelines("@=\"" + value + "\"\n")
+                                    else:
+                                        reg_file.writelines("\"" + key + "\"=\"" + value + "\"\n")
+
                             elif type(value_key) is str:
                                 value_key = value_key.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
-                                reg_file.writelines("\"" + entry + "\"=\"" + value_key + "\"\n")
+                                if entry.lower() == "(default)":
+                                    reg_file.writelines("@=\"" + value_key + "\"\n")
+                                else:
+                                    reg_file.writelines("\"" + entry + "\"=\"" + value_key + "\"\n")
                             else:
                                 raise TypeError("Unknown type, support not added for this.")
                 else:
                     value_key = key_data[sub_key]
                     if type(value_key) is str:
                         value_key = value_key.replace("%INSTALLDIR%", install_dir).replace("\\", "\\\\")
-                        reg_file.writelines("\"" + sub_key + "\"=\"" + value_key + "\"\n")
+                        if sub_key.lower() == "(default)":
+                            reg_file.writelines("@=\"" + value_key + "\"\n")
+                        else:
+                            reg_file.writelines("\"" + sub_key + "\"=\"" + value_key + "\"\n")
                     else:
                         raise TypeError("Unknown type, support not added for this.")
 
