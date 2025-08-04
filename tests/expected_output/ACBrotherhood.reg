@@ -1,0 +1,12 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Ubisoft\Assassin's Creed Brotherhood]
+"installdir"="C:\\Games\\ACBrotherhood"
+"language"="Spanish"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Ubisoft\Assassin's Creed Brotherhood\GameUpdate]
+"ExecPath"="C:\\Games\\ACBrotherhood\\ACBSP.exe"
+"Info"="e89093e1ffbc4b5794ffa28e3837bbb8"
+"installdir"="C:\\Games\\ACBrotherhood"
+"language"="es"
+

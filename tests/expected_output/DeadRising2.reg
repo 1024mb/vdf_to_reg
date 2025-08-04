@@ -1,0 +1,5 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\CAPCOM\Dead Rising 2]
+"language"=dword:00003082
+"InstallDirectory"="C:\\Games\\DeadRising2\\"

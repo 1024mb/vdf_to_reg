@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Obsidian\Alpha Protocol]
+"EXEString"="C:\\Games\\AlphaProtocol\\binaries\\apgame.exe"
+"InstallPath"="C:\\Games\\AlphaProtocol"
+"Installing"="0"
+"Installing Name"="Alpha Protocol"

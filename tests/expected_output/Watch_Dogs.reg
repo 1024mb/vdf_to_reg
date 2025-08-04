@@ -1,0 +1,14 @@
+Windows Registry Editor Version 5.00
+
+[hkey_current_user\software\ubisoft\watch_dogs]
+"DefaultAudioLanguage"="en-US"
+"DefaultTextLanguage"="es-ES"
+
+[hkey_local_machine\software\ubisoft\launcher\installs\828]
+"installdir"="C:\\Games\\Watch_Dogs"
+"language"="es-ES"
+
+[hkey_local_machine\software\ubisoft\watch_dogs]
+"Exe"="Watch_Dogs.exe"
+"startarguments"=""
+

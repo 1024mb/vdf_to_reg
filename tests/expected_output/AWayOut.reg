@@ -1,0 +1,25 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Hazelight\AWayOut]
+"Install Dir"="C:\\Games\\AWayOut"
+@=""
+"Product GUID"="{E8D752CF-2FCC-470D-B0C5-4BFC6F42ACCE}"
+"Locale"="es_ES"
+"DisplayName"="A Way Out"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Origin Games\1028663]
+"Locale"="es_ES"
+"DisplayName"="A Way Out"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Origin Games\1028663_oa]
+"Locale"="es_ES"
+"DisplayName"="A Way Out"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{E8D752CF-2FCC-470D-B0C5-4BFC6F42ACCE}]
+@=""
+"DisplayName"="A Way Out"
+"DisplayIcon"="C:\\Games\\AWayOut\\Haze1\\Binaries\\AWayOut.exe"
+"InstallLocation"="C:\\Games\\AWayOut"
+"publisher"="Electronic Arts, Inc."
+"URLInfoAbout"="http://www.ea.com"
+
