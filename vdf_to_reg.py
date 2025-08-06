@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import subprocess
 import sys
@@ -45,6 +46,10 @@ def main():
     parser.add_argument("--auto-import", "-ai",
                         action="store_true",
                         help="Auto import reg file after creation.")
+    parser.add_argument("--log-level",
+                        help="Set the logging level",
+                        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                        default="INFO")
     # Script exit codes:
     #                   2 = Language not found in supported list
     #                   3 = No registry data inside VDF file
@@ -60,6 +65,9 @@ def main():
     output = args.output
     no_fallback = args.no_fallback
     install_dir = args.install_dir
+    log_level = args.log_level
+
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 
     start_processing(language=language,
                      vdf_path=path,
@@ -85,8 +93,9 @@ def start_processing(language: str,
     preferred_language = sanitize_lang(language=language)
 
     if preferred_language not in supported_languages:
-        print("\nERROR: Specified language is not present in the supported languages list, if this is a mistake please"
-              " contact the maintainer, make a PR or edit this script file to include the language.")
+        logging.critical("Specified language is not present in the supported languages list, "
+                         "if this is a mistake please contact the maintainer, "
+                         "make a PR or edit this script file to include the language.")
         sys.exit(2)
 
     top, reg_key_names, output = create_reg(vdf_path=vdf_path,
@@ -99,9 +108,9 @@ def start_processing(language: str,
                                                        no_fallback=no_fallback,
                                                        output=output)
     if auto_import:
-        print("Importing reg file to the 32-bit registry location...")  # this is for old games
+        logging.info("Importing reg file to the 32-bit registry location...")  # this is for old games
         subprocess.call(["reg", "import", output, "/reg:32"])
-        print("\nImporting reg file to the 64-bit registry location...")
+        logging.info("Importing reg file to the 64-bit registry location...")
         subprocess.call(["reg", "import", output, "/reg:64"])
 
     if language_fallback:
@@ -112,7 +121,7 @@ def start_processing(language: str,
         exit_code = 4
 
     if not language_present:
-        print("\nINFO: The specified language wasn't found in the VDF file." + fallback_msg)
+        logging.info("The specified language wasn't found in the VDF file." + fallback_msg)
         sys.exit(exit_code)
 
     sys.exit(0)
@@ -151,7 +160,7 @@ def create_reg(vdf_path: str,
     vdf_content = vdf.parse(open(vdf_path, "r", encoding="utf-8", errors="surrogatepass"))
 
     if "Registry" not in vdf_content["InstallScript"].keys():
-        print("There is nothing to create a registry of, aborting...")
+        logging.critical("There is nothing to create a registry of, aborting...")
         sys.exit(3)
 
     top = vdf_content["InstallScript"]["Registry"]
