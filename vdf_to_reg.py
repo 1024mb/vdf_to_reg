@@ -198,7 +198,7 @@ def populate_reg(top: dict,
 
     with open(output, "a", encoding="utf-8", errors="surrogatepass") as reg_file:
         for reg_key_name in reg_key_names:
-            reg_file.writelines("[" + reg_key_name + "]\n")
+            reg_file.writelines("[" + sanitize_key_name(key_name=reg_key_name) + "]\n")
             key_data = top[reg_key_name]
 
             language_found = None
@@ -286,6 +286,18 @@ def set_language(key_data: dict,
             reg_file.writelines("\"" + key + "\"=dword:" + value + "\n")
         else:
             reg_file.writelines("\"" + key + "\"=\"" + value + "\"\n")
+
+
+def sanitize_key_name(key_name: str) -> str:
+    root_key, sub_key = key_name.split("\\", 1)
+
+    if root_key.lower().endswith("_wow64_32"):
+        first_child, rest = sub_key.split("\\", 1)
+        return root_key[:-9] + "\\" + first_child + "\\WOW6432Node\\" + rest
+    elif root_key.lower().endswith("_wow64_64"):
+        return root_key[:-9] + "\\" + sub_key
+    else:
+        return key_name
 
 
 if __name__ == "__main__":
