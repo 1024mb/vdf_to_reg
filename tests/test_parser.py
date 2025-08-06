@@ -32,6 +32,7 @@ def teardown_function():
     ("TheCuartel.vdf", "TheCuartel.reg"),
     ("Watch_Dogs.vdf", "Watch_Dogs.reg"),
     ("AWayOut.vdf", "AWayOut.reg"),
+    ("ItTakesTwo.vdf", "ItTakesTwo.reg"),
 ])
 def test_parser_output(input_file,
                        expected_file):

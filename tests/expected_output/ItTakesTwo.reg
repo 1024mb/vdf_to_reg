@@ -1,0 +1,29 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Hazelight\ItTakesTwo]
+"Install Dir"="C:\\Games\\ItTakesTwo\\"
+@=""
+"Product GUID"="{10AD7848-62A0-425D-9E7C-A14E6EBB46BA}"
+"locale"="es_ES"
+"DisplayName"="It Takes Two (Español España)"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Hazelight\ItTakesTwo]
+"Install Dir"="C:\\Games\\ItTakesTwo\\"
+@=""
+"Product GUID"="{10AD7848-62A0-425D-9E7C-A14E6EBB46BA}"
+"locale"="es_ES"
+"DisplayName"="It Takes Two (Español España)"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Origin Games\16050355]
+"locale"="es_ES"
+"DisplayName"="It Takes Two"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{10AD7848-62A0-425D-9E7C-A14E6EBB46BA}]
+"DisplayName"="It Takes Two"
+@=""
+"DisplayName"="It Takes Two"
+"DisplayIcon"="C:\\Games\\ItTakesTwo\\Nuts\\Binaries\\Win64\\ItTakesTwo.exe"
+"InstallLocation"="C:\\Games\\ItTakesTwo"
+"publisher"="Electronic Arts, Inc."
+"URLInfoAbout"="http://www.ea.com"
+
