@@ -18,7 +18,7 @@ def main():
     parser.add_argument("--path", "-p",
                         type=str,
                         required=False,
-                        default=os.path.join(os.getcwd(), "installscript.vdf"),
+                        default="",
                         help="VDF file vdf_path, by default loads the \"installscript.vdf\" file located in the current"
                              " directory.")
     parser.add_argument("--install-dir", "-id",
@@ -69,6 +69,9 @@ def main():
 
     logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 
+    if path == "":
+        path = detect_vdf_file()
+
     start_processing(language=language,
                      vdf_path=path,
                      batch=batch,
@@ -76,6 +79,30 @@ def main():
                      output=output,
                      no_fallback=no_fallback,
                      install_dir=install_dir)
+
+
+def detect_vdf_file() -> str:
+    vdf_file: str = os.path.join(os.getcwd(), "installscript.vdf")
+
+    if not os.path.isfile(vdf_file):
+        logging.warning("No installscript.vdf file found in the current directory, searching for one...")
+
+        cur_dir_content: list[str] = os.listdir(os.getcwd())
+
+        number_of_vdf_files: int = 0
+        vdf_file: str = ""
+        for file in cur_dir_content:
+            if file.lower().endswith(".vdf"):
+                number_of_vdf_files += 1
+                vdf_file = file
+
+        if number_of_vdf_files == 1:
+            return os.path.join(os.getcwd(), vdf_file)
+        else:
+            logging.error("Multiple (or none) VDF files found in the current directory, aborting...")
+            sys.exit(3)
+    else:
+        return vdf_file
 
 
 def start_processing(language: str,
