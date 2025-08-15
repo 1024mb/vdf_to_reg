@@ -186,11 +186,27 @@ def create_reg(vdf_path: str,
 
     vdf_content = vdf.parse(open(vdf_path, "r", encoding="utf-8", errors="surrogatepass"))
 
-    if "Registry" not in vdf_content["InstallScript"].keys():
+    key_name: str | None = None
+    for key in vdf_content.keys():
+        if key.lower() == "installscript":
+            key_name = key
+            break
+
+    if key_name is None:
         logging.critical("There is nothing to create a registry of, aborting...")
         sys.exit(3)
 
-    top = vdf_content["InstallScript"]["Registry"]
+    sub_key_name: str | None = None
+    for sub_key in vdf_content[key_name].keys():
+        if sub_key.lower() == "registry":
+            sub_key_name = sub_key
+            break
+
+    if sub_key_name is None:
+        logging.critical("There is nothing to create a registry of, aborting...")
+        sys.exit(3)
+
+    top = vdf_content[key_name][sub_key_name]
     reg_key_names = list(top.keys())  # To get the registry key names/paths
 
     with open(output, "w", encoding="utf-8", errors="surrogatepass") as reg_file:
