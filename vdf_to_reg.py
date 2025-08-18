@@ -201,6 +201,9 @@ def create_reg(vdf_path: str,
         if sub_key.lower() == "registry":
             sub_key_name = sub_key
             break
+        elif sub_key.lower() == "registry if not present":
+            sub_key_name = sub_key
+            break
 
     if sub_key_name is None:
         logging.critical("There is nothing to create a registry of, aborting...")
